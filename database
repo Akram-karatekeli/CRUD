@@ -1,0 +1,192 @@
+from asyncio.windows_events import NULL
+from genericpath import exists
+import sqlite3 
+import cases
+import subprocess as sp
+conn=sqlite3.connect('databasedb.sqlite')
+cur=conn.cursor()
+drop=0
+Id=0
+def increment():
+   Id=Id+1
+
+if drop==1:
+ cur.execute('Drop table if exists Base')
+ cur.execute ('CREATE TABLE Base (id INTEGER PRIMARY KEY  , STUD_ID INTEGER, name TEXT , math TEXT , science TEXT , history TEXT , english TEXT)')
+ fname="students.txt"
+ fh=open(fname)
+ for line in fh :
+    pieces=line.split()
+    name=pieces[0]
+    math=pieces[1]
+    science=pieces[2]
+    history=pieces[3]
+    english=pieces[4]
+    increment()
+    row=cur.fetchone()
+    cur.execute(' INSERT INTO Base (id,name,math,science,history,english) VALUES (?,?,?,?,?,?)',(id,name,math,science,history,english))
+    conn.commit()
+ cur.close()
+##------------------------------------------------------------------------------------------------------------------------------------------##
+def create_table():
+	conn = sqlite3.connect('Base.sqlite')
+	cur = conn.cursor()
+	cur.execute('CREATE TABLE IF NOT EXISTS Base(id INTEGER PRIMARY KEY, STUD_ID INTEGER, name TEXT,math TEXT, science TEXT,History TEXT,english TEXT) ')
+	conn.commit()
+	conn.close()
+
+def add_student(STUD_ID,name,math,science,history,english):
+	conn = sqlite3.connect('Base.sqlite')
+	cur = conn.cursor()
+	cur.execute(' INSERT INTO Base( STUD_ID, name, math , science , history , english ) VALUES ( ?,?,?,?,?,? )',(STUD_ID,name,math,science,history,english))
+	conn.commit()
+	conn.close()
+
+def get_students():
+	conn = sqlite3.connect('Base.sqlite')
+	cur = conn.cursor()
+	cur.execute( 'SELECT STUD_ID, name, math,science,history,english FROM Base')
+
+	all_rows = cur.fetchall()
+	conn.commit()
+	conn.close()
+	return all_rows
+    ##STUD_ID, name, math,science,history,english##
+def sort_students(rot):
+   conn = sqlite3.connect('Base.sqlite')
+   rot=rot
+   cur = conn.cursor()
+   if rot=='name':
+    cur.execute( 'SELECT * FROM Base ORDER BY name')
+   elif rot=='math':
+      cur.execute( 'SELECT * FROM Base ORDER BY math')
+   elif rot=='science':
+      cur.execute( 'SELECT * FROM Base ORDER BY science')
+   elif rot=='history':
+      cur.execute( 'SELECT * FROM Base ORDER BY History')
+   elif rot=='english':
+      cur.execute( 'SELECT * FROM Base ORDER BY english')
+   all_rows = cur.fetchall()
+   conn.commit()
+   conn.close()
+   return all_rows
+def get_student_by_roll(STUD_ID):
+	conn = sqlite3.connect('Base.sqlite')
+
+	cursor = conn.cursor()
+	cursor.execute(' SELECT STUD_ID, name,math,science,history,english FROM Base WHERE STUD_ID = {}' .format(STUD_ID))
+	all_rows = cursor.fetchall()
+	conn.commit()
+	conn.close()
+	return all_rows
+
+def update_student(STUD_ID,name,math,science,history,english):
+	conn = sqlite3.connect('Base.sqlite')
+	cursor = conn.cursor()
+	cursor.execute(' UPDATE Base SET name = ?, math = ? , science = ?,history = ? , english = ? WHERE STUD_ID = ?',(name,math,science,history,english,STUD_ID))
+	conn.commit()
+	conn.close()
+
+def delete_student(STUD_ID):
+	conn = sqlite3.connect('Base.sqlite')
+	cursor = conn.cursor()
+	cursor.execute(' DELETE FROM Base  WHERE STUD_ID = {}' .format(STUD_ID))
+	all_rows = cursor.fetchall()
+	conn.commit()
+	conn.close()
+	return all_rows
+
+
+if drop==1:
+ create_table()
+##__________________________________________________________________________________________________________________________________________##
+def add_data(id,name,math,science,history,english):
+	add_student(id,name,math,science,history,english)
+def get_data():
+	return get_students()
+
+def show_data():
+	students = get_data()
+	for student in students :
+		print(student)
+
+def show_sorted_data(rot):
+	students = sort_students(rot)
+	for student in students :
+		print(student)
+def show_data_by_id(id):
+	students = get_student_by_roll(id)
+	if not students:
+		print("No data found at ID",id)
+	else:
+		print (students)
+
+
+print('''List of command :\n1)add a student\n2)update a mark\n3)delete a student from the list\n4)sort the students\n5)search for a student\n6)show all students\n
+type the number of command to use it\n''')
+
+
+conn=sqlite3.connect('databasedb.sqlite')
+cur=conn.cursor()
+inp='yes'
+while inp=='yes'or inp=='Yes'or inp=='YES':
+ comm=input('command number:')
+ com=int(comm)
+ if com==NULL :
+    print('the command isnt valid')
+ elif com==6:
+     
+     show_data() 
+     input("\n\npress enter to back:")
+ elif com>7 or com<0 :
+    print('the number isnt valid')
+
+ elif com==1:
+    
+    stn=input('enter student name: ')
+    st=int(input('enter students iD : '))
+    m1=input('enter the grades as follows  math : ')
+    s1=input('science: ')
+    h1=input('history: ')
+    e1=input('english: ') 
+    
+    add_data(st,stn,m1,s1,h1,e1)
+
+
+ elif com==2:
+    id__ = int(input('Enter Id: '))
+    name=input('Enter students name: ')
+    a3=input('new marks - math: ')
+    a4=input('science: ')
+    a5=input('history: ')
+    a6=input('english: ')
+    
+   
+    update_student(id__,name,a3,a4,a5,a6)
+    show_data_by_id(id__)
+    print()
+    input("\n\nYour data has been updated \npress enter to back:")
+
+ elif com==3:
+   delet=input('type the students Id:')
+   show_data_by_id(delet)
+   delete_student(delet)
+   input("\n\nYour data has been deleted \npress enter to back:") 
+   all_rows = cur.fetchall()
+
+ elif com==4:
+   rot=input('enter the field: ')
+   show_sorted_data(rot)
+
+ elif com==5:
+   
+   id__ = int(input('Enter Id: '))
+   show_data_by_id(id__)
+   input("\n\npress enter to back:")
+
+
+ conn.commit()
+ inp=input('do you want to continue? type yes or no : ')
+
+
+cur.close()
